@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5174'],
+    'allowed_origins' => [env('CORS_ACCEPT_ORIGIN', 'http://localhost:5174')],
 
     'allowed_origins_patterns' => [],
 
