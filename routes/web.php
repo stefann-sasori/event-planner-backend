@@ -14,3 +14,13 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 });
+Route::get('/debug-proxy', function (\Illuminate\Http\Request $request) {
+    return [
+        'full_url' => $request->fullUrl(),
+        'secure' => $request->isSecure(),
+        'scheme' => $request->getScheme(),
+        'host' => $request->getHost(),
+        'headers' => $request->headers->all(),
+        'app_url' => config('app.url'),
+    ];
+});

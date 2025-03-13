@@ -19,12 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->group('jwt', [
             JwtMiddleware::class,
         ]);
-        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR |
-            Request::HEADER_X_FORWARDED_HOST |
-            Request::HEADER_X_FORWARDED_PORT |
-            Request::HEADER_X_FORWARDED_PROTO |
-            Request::HEADER_X_FORWARDED_AWS_ELB
-        );
+        $middleware->trustProxies(at: ['167.86.67.223'],
+headers: \Illuminate\Http\Request::HEADER_FORWARDED);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
