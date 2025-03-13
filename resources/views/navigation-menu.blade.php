@@ -16,6 +16,11 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <a class="inline-flex items-center px-1 pt-1 text-sm font-medium leading-5 text-gray-900 focus:outline-none focus:border-indigo-700 transition duration-150 ease-in-out" href="{{ config('frontend.home')  }}">
+                        Event planner
+                    </a>
+                </div>
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">

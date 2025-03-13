@@ -14,6 +14,11 @@ class EventRepository
         return Event::find($id);
     }
 
+    public function findByIdOrFail(int $id): ?Event
+    {
+        return Event::findOrFail($id);
+    }
+
     public function save(Event $event): bool
     {
         return $event->save();
@@ -39,7 +44,7 @@ class EventRepository
         $event->waitListUsers()->detach($user);
     }
 
-    public function search(array $filters = [], int $perPage = 50): LengthAwarePaginator
+    public function search(array $filters = [], int $perPage = 100): LengthAwarePaginator
     {
         $query = Event::query()
         ->where('status', '=', EventStatusEnum::LIVE->value);
@@ -60,6 +65,18 @@ class EventRepository
             $query->where('ends_at', '<=', $filters['date_to']);
         }
 
+        $query->orderBy('starts_at');
+
         return $query->latest()->paginate($perPage);
+    }
+
+    public function hasOverlappingEventsForUser(User $user, Event $newEvent, string $relationship = 'participants'): bool
+    {
+        return Event::whereHas($relationship, function ($query) use ($user) {
+            $query->where('users.id', $user->id);
+        })
+            ->where('ends_at', '>=', $newEvent->starts_at)
+            ->where('starts_at', '<=', $newEvent->ends_at)
+            ->exists();
     }
 }

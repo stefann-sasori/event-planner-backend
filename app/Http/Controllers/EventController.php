@@ -4,17 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EventSearchRequest;
 use App\Http\Requests\EventJoinRequest;
-use App\Models\User;
 use App\Repository\EventRepository;
+use App\Service\EventService;
 use Illuminate\Http\JsonResponse;
+use Throwable;
 
 class EventController extends Controller
 {
-    private EventRepository $eventRepository;
 
-    public function __construct(EventRepository $eventRepository)
+    public function __construct(private readonly EventRepository $eventRepository, private readonly EventService $eventService)
     {
-        $this->eventRepository = $eventRepository;
     }
 
     /**
@@ -57,26 +56,16 @@ class EventController extends Controller
      */
     public function join(EventJoinRequest $request): JsonResponse
     {
-        $event = $this->eventRepository->findById($request->event_id);
+        $event = $this->eventRepository->findByIdOrFail($request->event_id);
 
-        if (!$event) {
+        try {
+            $this->eventService->join($event, auth()->user());
+        }catch (Throwable $e){
             return response()->json([
                 'success' => false,
-                'message' => 'Event not found',
-            ], 404);
-        }
-
-        /** @var User $user */
-        $user = auth()->user();
-
-        if ($event->isParticipant($user)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User is already a participant',
+                'message' => $e->getMessage(),
             ], 400);
         }
-
-        $this->eventRepository->addParticipant($event, $user);
 
         return response()->json([
             'success' => true,
@@ -90,33 +79,17 @@ class EventController extends Controller
      */
     public function wait(EventJoinRequest $request): JsonResponse
     {
-        $event = $this->eventRepository->findById($request->event_id);
+        $event = $this->eventRepository->findByIdOrFail($request->event_id);
 
-        if (!$event) {
+        try {
+            $this->eventService->wait($event, auth()->user());
+        }catch (Throwable $e){
             return response()->json([
                 'success' => false,
-                'message' => 'Event not found',
-            ], 404);
-        }
-
-        /** @var User $user */
-        $user = auth()->user();
-
-        if ($event->isOnWaitList($user)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User is already on the wait list',
+                'message' => $e->getMessage(),
             ], 400);
         }
 
-        if ($event->isParticipant($user)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User is already a participant',
-            ], 400);
-        }
-
-        $this->eventRepository->addToWaitList($event, $user);
 
         return response()->json([
             'success' => true,

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 
 class Event extends Model
 {
@@ -46,5 +47,35 @@ class Event extends Model
     public function canAddInWaitList(): bool
     {
         return $this->waitListUsers()->count() < $this->waitListCapacity;
+    }
+
+    public function isPast(): bool
+    {
+        return Carbon::now()->greaterThan($this->ends_at);
+    }
+
+    public function isHappening(): bool
+    {
+        $now = Carbon::now();
+        return $now->greaterThanOrEqualTo($this->starts_at) &&
+            $now->lessThanOrEqualTo($this->ends_at);
+    }
+
+    public function toArray(): array
+    {
+        $array = array_merge(parent::toArray(), [
+            'is_past' => $this->isPast(),
+            'is_happening' => $this->isHappening(),
+            'can_add_in_waitList' => $this->canAddInWaitList(),
+            'can_add_new_participant' => $this->canAddNewParticipant(),
+        ]);
+        /** @var User $user */
+        $user = auth()->user();
+        if($user){
+            $array['is_participant'] = $this->isParticipant($user);
+            $array['is_waiting'] = $this->isOnWaitList($user);
+        }
+
+        return $array;
     }
 }
