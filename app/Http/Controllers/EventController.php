@@ -36,14 +36,7 @@ class EventController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $event = $this->eventRepository->findById($id);
-
-        if (!$event) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Event not found',
-            ], 404);
-        }
+        $event = $this->eventRepository->findByIdOrFail($id);
 
         return response()->json([
             'success' => true,
