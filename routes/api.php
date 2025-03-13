@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::prefix('events')->middleware('jwt')->group(function () {
+Route::prefix('events')->middleware(['jwt', 'verified'])->group(function () {
     Route::get('/', [EventController::class, 'index']);
     Route::get('/{id}', [EventController::class, 'show']);
     Route::post('/join', [EventController::class, 'join']);

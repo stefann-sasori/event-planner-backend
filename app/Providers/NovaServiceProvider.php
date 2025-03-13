@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Enum\RoleEnum;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Fortify\Features;
@@ -54,9 +55,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewNova', function (User $user) {
-            return in_array($user->email, [
-                //
-            ]);
+            return $user->hasRole(RoleEnum::ADMIN->value);
         });
     }
 
@@ -90,5 +89,14 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
         parent::register();
 
         //
+    }
+
+    protected function authorization(): void
+    {
+        $this->gate();
+
+        Nova::auth(function ($request) {
+            return Gate::check('viewNova', [$request->user()]);
+        });
     }
 }
